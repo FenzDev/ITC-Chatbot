@@ -1,8 +1,12 @@
 import { configDotenv } from 'dotenv';
 import { z, type ZodType } from 'zod';
 
-configDotenv({quiet: true});
+configDotenv({ quiet: true });
 
+export const NODE_ENV = validEnv(
+  'NODE_ENV',
+  z.enum(['development', 'production', 'test']),
+);
 export const PORT = validEnv('PORT', z.coerce.number().default(3000));
 export const MONGODB_URI = validEnv('MONGODB_URI', z.string().nonempty());
 export const JWT_EXPIRES_IN = validEnv('JWT_EXPIRES_IN', z.string().nonempty());
