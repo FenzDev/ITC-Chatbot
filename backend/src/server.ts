@@ -1,17 +1,38 @@
-import express from 'express';
-import cors from 'cors';
+import app from './app.js';
+import { connectDatabase } from './config/db.js';
 import { PORT } from './config/env.js';
-import { httpLogger } from './middleware/logger.middleware.js';
+import { logger } from './config/logger.js';
 
-const app = express();
+async function startServer(): Promise<void> {
+  try {
+    await connectDatabase();
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
+    const server = app.listen(PORT, () => {
+      logger.info(`ITC Hub API running on port ${PORT}`);
+    });
 
-app.use(httpLogger);
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      logger.info('SIGTERM received. Closing server...');
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+      server.close(() => {
+        logger.info('HTTP server closed');
+        process.exit(0);
+      });
+    });
+
+    process.on('SIGINT', () => {
+      logger.info('SIGINT received. Closing server...');
+
+      server.close(() => {
+        logger.info('HTTP server closed');
+        process.exit(0);
+      });
+    });
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to start server');
+    process.exit(1);
+  }
+}
+
+startServer();

@@ -7,6 +7,7 @@ export const NODE_ENV = validEnv(
   'NODE_ENV',
   z.enum(['development', 'production', 'test']),
 );
+export const FRONTEND_URL = validEnv('FRONTEND_URL', z.string());
 export const PORT = validEnv('PORT', z.coerce.number().default(3000));
 export const MONGODB_URI = validEnv('MONGODB_URI', z.string().nonempty());
 export const JWT_EXPIRES_IN = validEnv('JWT_EXPIRES_IN', z.string().nonempty());

@@ -1,0 +1,242 @@
+
+@baseUrl = http://localhost:3000/api
+@contentType = application/json
+
+# Replace these after successful requests
+@eventId = REPLACE_WITH_EVENT_ID
+@invalidId = 123invalid
+@adminEmail = admin@example.com
+@memberEmail = member@example.com
+
+### ==========================================
+### 1. HEALTH
+### ==========================================
+
+### Health check
+GET {{baseUrl}}/health
+
+
+### ==========================================
+### 2. AUTH - REGISTER
+### ==========================================
+
+### Register member - success
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "ITC Member",
+  "email": "member@example.com",
+  "password": "Password123"
+}
+
+
+### Register - duplicate email (409)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Another Member",
+  "email": "member@example.com",
+  "password": "Password123"
+}
+
+
+### Register - invalid email (400)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Test User",
+  "email": "not-an-email",
+  "password": "Password123"
+}
+
+
+### Register - short password (400)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "name": "Test User",
+  "email": "test1@example.com",
+  "password": "123"
+}
+
+
+### Register - missing fields (400)
+POST {{baseUrl}}/auth/register
+Content-Type: {{contentType}}
+
+{
+  "email": "test2@example.com"
+}
+
+
+### ==========================================
+### 3. AUTH - LOGIN
+### ==========================================
+
+### Login - success
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "member@example.com",
+  "password": "Password123"
+}
+
+
+### Login - wrong password (401)
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "member@example.com",
+  "password": "WrongPassword123"
+}
+
+
+### Login - unknown email (401)
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "unknown@example.com",
+  "password": "Password123"
+}
+
+
+### Login - invalid email (400)
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "invalid-email",
+  "password": "Password123"
+}
+
+
+### Login - missing password (400)
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "email": "member@example.com"
+}
+
+
+### ==========================================
+### 4. AUTH - PROTECTED ROUTES
+### ==========================================
+
+### Get current user - requires login cookie
+GET {{baseUrl}}/auth/me
+
+
+### Get current user - without authentication
+# First clear the cookie jar or use a fresh REST Client session.
+GET {{baseUrl}}/auth/me
+
+
+### Logout
+POST {{baseUrl}}/auth/logout
+
+
+### Get current user - after logout
+GET {{baseUrl}}/auth/me
+
+
+### ==========================================
+### 5. EVENTS - PUBLIC
+### ==========================================
+
+### Get all events
+GET {{baseUrl}}/events
+
+
+### Get event by ID
+GET {{baseUrl}}/events/{{eventId}}
+
+
+### Get event - invalid ID
+GET {{baseUrl}}/events/{{invalidId}}
+
+
+### Get event - non-existing valid MongoDB ID
+GET {{baseUrl}}/events/507f1f77bcf86cd799439011
+
+
+### ==========================================
+### 6. EVENTS - ADMIN
+### ==========================================
+
+### Create event - success (requires admin)
+POST {{baseUrl}}/events
+Content-Type: {{contentType}}
+
+{
+  "title": "ITC Web Development Workshop",
+  "description": "A practical workshop about modern web development.",
+  "location": "University of Blida",
+  "date": "2026-12-15T10:00:00.000Z",
+  "image": "https://example.com/event.jpg",
+  "capacity": 50,
+  "registrationDeadline": "2026-12-14T23:59:59.000Z"
+}
+
+
+### Create event - invalid capacity
+POST {{baseUrl}}/events
+Content-Type: {{contentType}}
+
+{
+  "title": "Invalid Event",
+  "description": "Testing invalid capacity.",
+  "location": "Blida",
+  "date": "2026-12-15T10:00:00.000Z",
+  "capacity": -5,
+  "registrationDeadline": "2026-12-14T23:59:59.000Z"
+}
+
+
+### Create event - missing title
+POST {{baseUrl}}/events
+Content-Type: {{contentType}}
+
+{
+  "description": "An event without a title.",
+  "location": "Blida",
+  "date": "2026-12-15T10:00:00.000Z",
+  "capacity": 50,
+  "registrationDeadline": "2026-12-14T23:59:59.000Z"
+}
+
+
+### ==========================================
+### 7. EVENT REGISTRATION
+### ==========================================
+
+### Register for an event (requires member)
+POST {{baseUrl}}/events/{{eventId}}/register
+
+
+### Register for same event again (expect 409)
+POST {{baseUrl}}/events/{{eventId}}/register
+
+
+### ==========================================
+### 8. CHAT - FUTURE ENDPOINTS
+### ==========================================
+
+### Send chat message (requires member)
+POST {{baseUrl}}/chat
+Content-Type: {{contentType}}
+
+{
+  "message": "What upcoming ITC events can I attend?"
+}
+
+
+### Get chat history (requires member)
+GET {{baseUrl}}/chat/history
