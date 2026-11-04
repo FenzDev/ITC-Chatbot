@@ -1,1 +1,57 @@
-@import 'tailwindcss'
+@import 'tailwindcss';
+
+/* dark mode is controlled by a `.dark` class on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* 1. Raw palette: fixed values, never change between modes */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --color-red-50: #fdf2f1;
+  --color-red-100: #fbe2e0;
+  --color-red-200: #f7c4bf;
+  --color-red-300: #ef9a92;
+  --color-red-400: #e5675c;
+  --color-red-500: #d63326; /* brand accent */
+  --color-red-600: #b8281d;
+  --color-red-700: #971f17;
+  --color-red-800: #7a1c16;
+  --color-red-900: #641b17;
+}
+
+/* 2. Semantic tokens: these change per mode */
+:root {
+  --page: #ffffff;
+  --surface: #f5f5f5;
+  --ink: #0a0a0a;
+  --muted: #6b6b6b;
+  --line: #e5e5e5;
+  --accent: #d63326;
+  --on-accent: #ffffff;
+}
+
+.dark {
+  --page: #0a0a0a;
+  --surface: #171717;
+  --ink: #fafafa;
+  --muted: #a3a3a3;
+  --line: #2a2a2a;
+  --accent: #e5483b; /* slightly lighter for contrast on black */
+  --on-accent: #ffffff;
+}
+
+/* 3. Expose them as utilities: bg-page, bg-surface, text-ink, ... */
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+}

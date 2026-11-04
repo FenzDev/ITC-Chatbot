@@ -9,6 +9,9 @@ import authRoutes from './modules/auth/auth.routes.js';
 import eventRoutes from './modules/events/event.routes.js';
 import { FRONTEND_URL } from './config/env.js';
 
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './config/swagger.js';
+
 const app = express();
 
 // ==========================================
@@ -55,6 +58,14 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
+
+// ==========================================
+// 5.5. API Swagger UI
+// ==========================================
+
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
 
 // ==========================================
 // 6. Not found handler

@@ -26,7 +26,6 @@ export async function getAllEvents(
 ) {
   try {
     const events = await eventService.getAllEvents();
-
     res.status(200).json({
       success: true,
       data: events,
