@@ -1,3 +1,13 @@
+import { Hero } from "@/components/home/Hero";
+import { AssistantBand } from "@/components/home/AssistantBand";
+import { EventsSection } from "@/features/events/components/EventsSection";
+
 export function HomePage() {
-  return <h1 className="text-2xl font-bold">Home</h1>;
+  return (
+    <>
+      <Hero />
+      <EventsSection />
+      <AssistantBand />
+    </>
+  );
 }

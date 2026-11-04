@@ -1,23 +1,6 @@
-export type RegisterInput = {
-  name: string;
-  email: string;
-  password: string;
-};
-export type LoginInput = {
-  email: string;
-  password: string;
-};
+export type User = { id: string; email: string; name: string };
 
-export type AuthResponse = {
-  token: string;
-  // add user fields as your backend returns them
-};
+export type LoginInput = { email: string; password: string };
+export type RegisterInput = LoginInput & { name: string };
 
-export type AuthUser = {
-  token: string;
-  user: {
-    name: string;
-    email: string;
-    role: string;
-  };
-};
+export type AuthResponse = { token?: string };

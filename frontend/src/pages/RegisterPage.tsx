@@ -1,44 +1,40 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
+import { Overlay } from "@/components/ui/Overlay";
+import { AuthShell } from "@/components/ui/AuthShell";
+import { Field } from "@/components/ui/Field";
 import { useRegisterUser } from "@/features/auth/hooks";
-import type { RegisterInput } from "@/features/auth/types";
-
-const field = "w-full rounded border border-slate-300 px-3 py-2";
+import { getErrorMessage } from "@/lib/api-client";
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const register = useRegisterUser();
-  const [form, setForm] = useState<RegisterInput>({ name: "", email: "", password: "" });
-
-  const set = (key: keyof RegisterInput) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm((f) => ({ ...f, [key]: e.target.value }));
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    register.mutate(form, {
-      // TODO: store the returned token (context/localStorage) once auth is decided
-      onSuccess: () => navigate("/"),
-    });
+    register.mutate(form, { onSuccess: () => navigate("/") });
   }
 
   return (
-    <div className="mx-auto max-w-sm">
-      <h1 className="mb-4 text-2xl font-bold">Register</h1>
-      <form onSubmit={submit} className="space-y-3">
-        <input className={field} placeholder="Name" value={form.name} onChange={set("name")} required />
-        <input className={field} type="email" placeholder="Email" value={form.email} onChange={set("email")} required />
-        <input className={field} type="password" placeholder="Password" minLength={8} value={form.password} onChange={set("password")} required />
-        {register.isError && <p className="text-red-600">Registration failed.</p>}
-        <button
-          disabled={register.isPending}
-          className="w-full rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
-        >
-          {register.isPending ? "Creating account…" : "Create account"}
-        </button>
-      </form>
-      <p className="mt-4 text-sm text-slate-600">
-        Already a member? <Link to="/login" className="text-blue-600 hover:underline">Log in</Link>
-      </p>
-    </div>
+    <Overlay label="Join">
+      <AuthShell title="Join the hub" subtitle="Create your member account.">
+        <form onSubmit={submit} className="space-y-4">
+          <Field label="Name" required autoComplete="name" value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <Field label="Email" type="email" required autoComplete="email" value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          <Field label="Password" type="password" required minLength={8} autoComplete="new-password" value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })} />
+          {register.isError && <p role="alert" className="text-sm text-accent">{getErrorMessage(register.error, "Registration failed.")}</p>}
+          <button disabled={register.isPending} className="btn btn-primary w-full">
+            {register.isPending ? "Creating account…" : "Create account"}
+          </button>
+        </form>
+        <p className="mt-6 text-sm text-muted">
+          Already a member? <Link to="/login" replace className="font-semibold text-accent hover:underline">Log in</Link>
+        </p>
+      </AuthShell>
+    </Overlay>
   );
 }
