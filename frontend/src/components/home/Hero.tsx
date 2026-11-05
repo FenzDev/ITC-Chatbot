@@ -6,7 +6,7 @@ export function Hero() {
     <section id="top" className="border-b-2 border-ink">
       <div className="wrap grid gap-14 py-14 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:py-20">
         <div className="animate-rise">
-          <p className="eyebrow mb-4">IT Community</p>
+          <p className="eyebrow text-2xl mb-4">IT Community</p>
           <h1 className="font-display text-5xl font-extrabold leading-[1.02] tracking-tight sm:text-6xl xl:text-7xl text-balance">
             SHARING IS CARING
           </h1>
