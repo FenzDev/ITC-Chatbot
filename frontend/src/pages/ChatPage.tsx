@@ -1,5 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
+import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
+import remarkGfm from 'remark-gfm';
 import { Overlay } from '@/components/ui/Overlay';
 import {
   useChatHistory,
@@ -120,15 +123,26 @@ export function ChatPage() {
               key={i}
               className={`flex animate-rise ${m.role === 'user' ? 'justify-end' : ''}`}
             >
-              <p
+              <div
                 className={`max-w-[85%] whitespace-pre-wrap rounded-md px-4 py-3 leading-relaxed ${
                   m.role === 'user'
                     ? 'bg-accent text-on-accent'
                     : 'border-2 border-line bg-surface'
                 }`}
               >
-                {m.content}
-              </p>
+                {m.role === 'assistant' ? (
+                  <div className="chat-markdown">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeSanitize]}
+                    >
+                      {m.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  m.content
+                )}
+              </div>
             </div>
           ))}
 
