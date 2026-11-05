@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Overlay } from "@/components/ui/Overlay";
 import { useSendChat } from "@/features/chat/hooks";
+import { useChatHistory } from "@/features/chat/hooks";
+import { useGetUser } from "@/features/auth/hooks";
 import type { ChatMessage } from "@/features/chat/types";
 
 const suggestions = ["What events are coming up?", "How do I join the club?", "What can you help with?"];
@@ -9,14 +11,22 @@ export function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const chat = useSendChat();
+  const { data: user } = useGetUser();
+  const history = useChatHistory(Boolean(user));
+
+  if (history.isPending) {
+    return <Overlay label="Assistant"><p className="p-5 text-muted">Loading conversation…</p></Overlay>;
+  }
+
+  const displayedMessages = messages.length > 0 ? messages : (history.data ?? []);
 
   function send(text: string) {
     if (!text.trim() || chat.isPending) return;
-    const next: ChatMessage[] = [...messages, { role: "user", content: text.trim() }];
+    const next: ChatMessage[] = [...displayedMessages, { role: "user", content: text.trim() }];
     setMessages(next);
     setInput("");
     chat.mutate(next, {
-      onSuccess: ({ reply }) => setMessages([...next, { role: "assistant", content: reply }]),
+      onSuccess: (reply) => setMessages([...next, { role: "assistant", content: reply }]),
     });
   }
 
@@ -24,7 +34,7 @@ export function ChatPage() {
     <Overlay label="Assistant">
       <div className="mx-auto flex h-full max-w-3xl flex-col">
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-8">
-          {messages.length === 0 && (
+          {displayedMessages.length === 0 && (
             <div className="animate-rise pt-[6vh] text-center">
               <p className="eyebrow mb-4">Club assistant</p>
               <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-6xl">
@@ -38,7 +48,7 @@ export function ChatPage() {
             </div>
           )}
 
-          {messages.map((m, i) => (
+          {displayedMessages.map((m, i) => (
             <div key={i} className={`flex animate-rise ${m.role === "user" ? "justify-end" : ""}`}>
               <p
                 className={`max-w-[85%] whitespace-pre-wrap rounded-md px-4 py-3 leading-relaxed ${

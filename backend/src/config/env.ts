@@ -26,7 +26,7 @@ function validEnv<TOutput>(
   const result = schema.safeParse(process.env[variable]);
 
   if (!result.success) {
-    throw new Error(`Invalid environment variable: ${result.error.message}`);
+    throw new Error(`Invalid environment variable '${variable}': ${result.error.message}`);
   }
 
   return result.data;

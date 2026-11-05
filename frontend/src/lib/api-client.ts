@@ -17,18 +17,19 @@ export async function api<T>(path: string, { body, headers, ...init }: Options =
     ...init,
     headers: { "Content-Type": "application/json", ...headers },
     body: body === undefined ? undefined : JSON.stringify(body),
-    // credentials: "include", // enable if the backend uses cookies (needs CORS credentials too)
+    credentials: "include",
   });
 
   const data = res.status === 204 ? null : await res.json().catch(() => null);
   if (!res.ok) throw new ApiError(res.status, data);
-  return data as T;
+  return (data && typeof data === "object" && "data" in data ? data.data : data) as T;
 }
 
 /** Best-effort human message from a failed request. */
 export function getErrorMessage(err: unknown, fallback = "Something went wrong. Try again."): string {
-  if (err instanceof ApiError && err.body && typeof err.body === "object" && "message" in err.body) {
-    const m = (err.body as { message: unknown }).message;
+  if (err instanceof ApiError && err.body && typeof err.body === "object") {
+    const body = err.body as { message?: unknown; error?: { message?: unknown } };
+    const m = body.message ?? body.error?.message;
     if (typeof m === "string") return m;
   }
   return fallback;
