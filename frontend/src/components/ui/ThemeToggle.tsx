@@ -1,7 +1,11 @@
 export function ThemeToggle() {
   function toggle() {
     const dark = document.documentElement.classList.toggle("dark");
-    try { localStorage.setItem("theme", dark ? "dark" : "light"); } catch {}
+    try {
+      localStorage.setItem("theme", dark ? "dark" : "light");
+    } catch {
+      // The class still updates when storage is unavailable.
+    }
   }
   return (
     <button onClick={toggle} aria-label="Toggle light / dark mode" className="btn btn-ghost !p-2.5">
