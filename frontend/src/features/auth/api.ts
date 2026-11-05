@@ -9,3 +9,4 @@ export const loginUser = (input: LoginInput) =>
   api<AuthResponse>("/auth/login", { method: "POST", body: input });
 export const registerUser = (input: RegisterInput) =>
   api<AuthResponse>("/auth/register", { method: "POST", body: input });
+export const logoutUser = () => api<void>("/auth/logout", { method: "POST" });

@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 
 import * as eventService from './event.service.js';
+import { createEventSchema } from './event.validation.js';
 
 export async function createEvent(
   req: Request,
@@ -8,7 +9,20 @@ export async function createEvent(
   next: NextFunction,
 ) {
   try {
-    const event = await eventService.createEvent(req.body);
+    const result = createEventSchema.safeParse(req.body);
+
+    if (!result.success) {
+      res.status(400).json({
+        success: false,
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: result.error.issues[0].message,
+        },
+      });
+      return;
+    }
+
+    const event = await eventService.createEvent(result.data);
 
     res.status(201).json({
       success: true,

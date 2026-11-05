@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getEvent, getEvents, registerForEvent } from "./api";
+import { createEvent, getEvent, getEvents, registerForEvent } from "./api";
+import type { CreateEventInput } from "./types";
 
 export const eventKeys = {
   all: ["events"] as const,
@@ -16,5 +17,13 @@ export function useRegister(id: string) {
   return useMutation({
     mutationFn: () => registerForEvent(id),
     onSuccess: () => qc.invalidateQueries({ queryKey: eventKeys.detail(id) }),
+  });
+}
+
+export function useCreateEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CreateEventInput) => createEvent(input),
+    onSuccess: () => qc.invalidateQueries({ queryKey: eventKeys.all }),
   });
 }

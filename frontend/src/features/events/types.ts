@@ -5,3 +5,13 @@ export type Event = {
   location?: string;
   description?: string;
 };
+
+export type CreateEventInput = {
+  title: string;
+  description: string;
+  location: string;
+  date: string;
+  image?: string;
+  capacity: number;
+  registrationDeadline: string;
+};
