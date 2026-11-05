@@ -8,7 +8,14 @@ export async function createEvent(data: CreateEventInput) {
 }
 
 export async function getAllEvents() {
-  return Event.find().select('-registeredUsers').sort({ date: 1 });
+  return Event.find({
+    $or: [
+      { status: 'ongoing' },
+      { status: 'upcoming', date: { $gte: new Date() } },
+    ],
+  })
+    .select('-registeredUsers')
+    .sort({ date: 1 });
 }
 
 export async function getEventById(id: string) {

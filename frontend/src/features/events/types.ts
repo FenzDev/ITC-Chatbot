@@ -4,6 +4,7 @@ export type Event = {
   startsAt?: string; // ISO date string
   location?: string;
   description?: string;
+  image?: string;
 };
 
 export type CreateEventInput = {

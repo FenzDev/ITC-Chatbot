@@ -24,11 +24,22 @@ export function EventRow({ event }: { event: Event }) {
   const meta = [date?.time, event.location].filter(Boolean).join(" · ");
 
   return (
-    <li className="grid gap-4 py-6 sm:grid-cols-[5rem_1fr_auto] sm:items-center sm:gap-8">
+    <li className="grid gap-4 py-6 sm:grid-cols-[5rem_8rem_1fr_auto] sm:items-center sm:gap-8">
       <div className="flex size-20 flex-col items-center justify-center bg-accent text-on-accent">
         <span className="text-xs font-bold tracking-wider">{date?.month ?? "TBA"}</span>
         <span className="font-display text-3xl font-extrabold leading-none">{date?.day ?? "–"}</span>
       </div>
+
+      {event.image ? (
+        <img
+          src={event.image}
+          alt=""
+          loading="lazy"
+          className="h-24 w-full rounded-md border-2 border-line object-cover sm:h-20"
+        />
+      ) : (
+        <div aria-hidden="true" className="hidden h-20 rounded-md border-2 border-dashed border-line sm:block" />
+      )}
 
       <div>
         <h3 className="font-display text-xl font-bold leading-snug sm:text-2xl">{event.title}</h3>
