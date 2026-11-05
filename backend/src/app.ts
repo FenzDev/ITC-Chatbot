@@ -42,10 +42,17 @@ app.use(cookieParser());
 
 app.use(httpLogger);
 
-// ==========================================
-// 4. Health check
-// ==========================================
-
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Check API health
+ *     description: Returns a simple liveness response without accessing the database.
+ *     tags: [Health]
+ *     responses:
+ *       200:
+ *         description: API is running
+ */
 app.get('/api/health', (_req, res) => {
   res.status(200).json({
     success: true,
