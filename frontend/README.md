@@ -1,56 +1,96 @@
-# ITC Hub: Frontend (base)
+# ITC Hub frontend
 
-No content, no mock data: only the wiring.
+The frontend is a React 19 single-page application built with Vite, TypeScript, React Router, TanStack Query, and Tailwind CSS v4.
 
-**Stack:** TypeScript · React 19 · Vite · React Router · TanStack Query · Tailwind CSS v4 · oxlint
+## Setup
 
-## Quick start
 ```bash
 npm install
-npm run dev        # http://localhost:5173
+copy .env.example .env
+npm run dev
 ```
-Scripts: `dev`, `build` (tsc + vite), `preview`, `typecheck`, `lint`, `lint:fix`.
-Until a backend/mock API runs on `VITE_PROXY_TARGET` (default :3000), `/events` shows its error state. That is expected.
+
+The development server runs at [http://localhost:5173](http://localhost:5173). Vite proxies `/api` requests to `http://localhost:3000` by default.
+
+### Environment variables
+
+```env
+VITE_API_URL=
+VITE_PROXY_TARGET=http://localhost:3000
+```
+
+- Keep `VITE_API_URL` empty during local development.
+- Set `VITE_API_URL` to the deployed API origin in production.
+- The backend must allow the frontend origin and credentials in production.
+
+## Available scripts
+
+```bash
+npm run dev        # Start Vite development server
+npm run build      # Type-check and create production build
+npm run preview    # Preview the production build
+npm run typecheck  # Run TypeScript checks
+npm run lint       # Run Oxlint
+npm run lint:fix   # Apply Oxlint fixes
+```
+
+## Frontend features
+
+- Public event list and event registration flow
+- Login and member registration
+- Admin event creation and assistant context editor
+- Assistant chat with per-user history
+- Public assistant landing state with registration prompt
+- SSE streaming chat responses
+- GitHub-Flavored Markdown rendering for assistant messages
+- Sanitized Markdown output
+- TanStack Query caching for events, authentication, chat history, and assistant context
+- Cookie-based authentication using `credentials: "include"`
+- Persistent light/dark theme preference with system fallback
+
+## Routes
+
+| Route | Purpose |
+|---|---|
+| `/` | Home page and events |
+| `/login` | Login |
+| `/register` | Member registration |
+| `/chat` | Assistant |
+| `/admin/events` | Admin event and assistant configuration |
+
+The admin route also checks the authenticated user's role in the UI. The backend independently enforces admin authorization.
 
 ## Structure
-```
+
+```text
 src/
-├─ main.tsx              entry
-├─ index.css             Tailwind import + @theme tokens
-├─ app/
-│  ├─ providers.tsx      QueryClientProvider + RouterProvider
-│  └─ router.tsx         ALL routes live here
-├─ pages/                one component per route
-├─ features/<domain>/    types.ts · api.ts (fetch calls) · hooks.ts (TanStack Query)
-├─ components/
-│  ├─ layout/RootLayout  navbar + <Outlet />
-│  └─ ui/                shared buttons, cards...
-└─ lib/                  env.ts · api-client.ts (only place that calls fetch) · query-client.ts
+├─ app/                 Providers and router
+├─ components/          Layout and reusable UI
+├─ features/
+│  ├─ auth/             Auth API, hooks, and types
+│  ├─ chat/             Chat API, SSE parser, history, and context hooks
+│  └─ events/           Events API, registration, cache, and components
+├─ lib/                 API client, environment, and query client
+├─ pages/               Route-level pages
+├─ index.css            Theme tokens and shared component styles
+└─ main.tsx             Application entry point and theme initialization
 ```
-Rule: page in `pages/`, its data code in `features/`, reusable UI in `components/`.
 
-## Adding a page
-1. Create `src/pages/AboutPage.tsx`.
-2. Add `{ path: "about", element: <AboutPage /> }` to `src/app/router.tsx`.
-3. Add a link in `RootLayout.tsx`.
+Use the existing conventions when adding functionality:
 
-## Adding an API call
-1. Type in `features/x/types.ts`, function in `api.ts` using `api<T>("/path")`.
-2. Wrap in `useQuery` (reads) or `useMutation` (writes, then `invalidateQueries`) in `hooks.ts`.
-3. Use the hook in a page. Query results are cached (`staleTime` in `lib/query-client.ts`), which is your frontend caching layer.
+1. Define domain types in `features/<domain>/types.ts`.
+2. Put HTTP calls in `features/<domain>/api.ts`.
+3. Wrap reads and writes in `features/<domain>/hooks.ts`.
+4. Put route-level UI in `pages/`.
+5. Put reusable UI in `components/`.
 
-## CORS
-CORS is enforced by the browser and configured on the backend.
-- **Dev:** the app calls `/api/...` on :5173 and Vite proxies it to `VITE_PROXY_TARGET`. Same origin, so no CORS. Backend routes must start with `/api` (otherwise add a `rewrite` in `vite.config.ts`).
-- **Prod:** set `VITE_API_URL=https://api.yourdomain.com` and enable CORS on the backend, e.g. Express:
-```ts
-import cors from "cors";
-app.use(cors({ origin: ["https://your-frontend.com", "http://localhost:5173"] }));
-```
-If you use cookies: `credentials: "include"` in `lib/api-client.ts` plus `credentials: true` and an explicit origin on the backend.
+## Backend integration
 
-## Deploying (Module 4)
-`npm run build` outputs static files to `dist/`. Host on S3 + CloudFront; add a fallback of 403/404 to `/index.html` so React Router deep links work.
+The shared API client:
 
-## Backend contract assumed
-`POST /api/auth/register` with `{name,email,password}` returning `{token}` · `GET /api/events` · `GET /api/events/:id` · `POST /api/events/:id/register` · `POST /api/chat` with `{messages}` returning `{reply}`. Change it in `features/*/api.ts`.
+- Prefixes requests with `/api`
+- Sends cookies with `credentials: "include"`
+- Handles the backend `{ success, data }` response envelope
+- Converts API failures to `ApiError`
+
+Chat responses are different from normal JSON endpoints: `POST /api/chat` returns `text/event-stream`, which is parsed in `features/chat/api.ts`.
