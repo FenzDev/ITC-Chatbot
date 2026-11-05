@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { timingSafeEqual } from 'node:crypto';
-import { ADMIN_EMAIL, ADMIN_PASSWORD } from '../../config/env.js';
+import { ADMIN_EMAIL, ADMIN_PASSWORD, ADMIN_USER_ID } from '../../config/env.js';
 import { User } from '../users/user.model.js';
 import { generateToken } from '../../utils/jwt.js';
 import type { RegisterInput, LoginInput } from './auth.validation.js';
@@ -40,12 +40,12 @@ export async function login(data: LoginInput) {
       data.email === ADMIN_EMAIL &&
       secureCompare(data.password, ADMIN_PASSWORD)
     ) {
-      const token = generateToken('admin', 'admin');
+      const token = generateToken(ADMIN_USER_ID, 'admin');
 
       return {
         token,
         user: {
-          id: 'admin',
+          id: ADMIN_USER_ID,
           name: 'Administrator',
           email: ADMIN_EMAIL,
           role: 'admin' as const,
@@ -86,9 +86,9 @@ function secureCompare(value: string, expected: string): boolean {
 }
 
 export async function getCurrentUser(userId: string) {
-  if (userId === 'admin') {
+  if (userId === ADMIN_USER_ID) {
     return {
-      id: 'admin',
+      id: ADMIN_USER_ID,
       name: 'Administrator',
       email: ADMIN_EMAIL,
       role: 'admin' as const,

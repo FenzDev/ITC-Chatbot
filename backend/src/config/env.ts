@@ -1,4 +1,5 @@
 import { configDotenv } from 'dotenv';
+import { createHash } from 'node:crypto';
 import { z, type ZodType } from 'zod';
 
 configDotenv({ quiet: true });
@@ -20,6 +21,10 @@ export const ADMIN_PASSWORD = validEnv(
   'ADMIN_PASSWORD',
   z.string().min(8),
 );
+export const ADMIN_USER_ID = createHash('sha256')
+  .update(ADMIN_EMAIL)
+  .digest('hex')
+  .slice(0, 24);
 export const AI_API_KEY = validEnv('AI_API_KEY', z.string());
 export const AI_BASE_URL = validEnv(
   'AI_BASE_URL',

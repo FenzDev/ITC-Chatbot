@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../../middleware/auth.middleware.js';
 import { chatRateLimit } from '../../middleware/chat-rate-limit.middleware.js';
-import { requireRole } from '../../middleware/role.middleware.js';
+import { requireAnyRole, requireRole } from '../../middleware/role.middleware.js';
 import * as chatController from './chat.controller.js';
 
 const router = Router();
@@ -40,11 +40,11 @@ router.use(authenticate);
  *             schema: { type: string, example: 'data: {"content":"Hello"}\n\ndata: [DONE]\n\n' }
  *       400: { description: Invalid chat message }
  *       401: { description: Authentication required }
- *       403: { description: Member access required }
+ *       403: { description: Member or administrator access required }
  *       429: { description: Chat rate limit exceeded }
  *       503: { description: AI provider is not configured }
  */
-router.post('/', requireRole('member'), chatRateLimit, chatController.sendMessage);
+router.post('/', requireAnyRole('member', 'admin'), chatRateLimit, chatController.sendMessage);
 
 /**
  * @swagger
@@ -58,9 +58,9 @@ router.post('/', requireRole('member'), chatRateLimit, chatController.sendMessag
  *     responses:
  *       200: { description: Conversation messages }
  *       401: { description: Authentication required }
- *       403: { description: Member access required }
+ *       403: { description: Member or administrator access required }
  */
-router.get('/history', requireRole('member'), chatController.getHistory);
+router.get('/history', requireAnyRole('member', 'admin'), chatController.getHistory);
 /**
  * @swagger
  * /api/chat/history:
@@ -73,9 +73,9 @@ router.get('/history', requireRole('member'), chatController.getHistory);
  *     responses:
  *       204: { description: Conversation history cleared }
  *       401: { description: Authentication required }
- *       403: { description: Member access required }
+ *       403: { description: Member or administrator access required }
  */
-router.delete('/history', requireRole('member'), chatController.clearHistory);
+router.delete('/history', requireAnyRole('member', 'admin'), chatController.clearHistory);
 
 /**
  * @swagger
