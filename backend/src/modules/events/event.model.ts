@@ -1,4 +1,4 @@
-import mongoose, { Schema, type Document } from 'mongoose';
+import mongoose, { Schema, Types, type Document } from 'mongoose';
 
 export interface IEvent extends Document {
   title: string;
@@ -8,6 +8,7 @@ export interface IEvent extends Document {
   image?: string;
   capacity: number;
   registrationDeadline: Date;
+  registeredUsers: Types.ObjectId[];
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
 }
 
@@ -47,6 +48,12 @@ const eventSchema = new Schema<IEvent>(
     registrationDeadline: {
       type: Date,
       required: true
+    },
+
+    registeredUsers: {
+      type: [Schema.Types.ObjectId],
+      ref: 'User',
+      default: []
     },
 
     status: {

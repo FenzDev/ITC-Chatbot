@@ -41,6 +41,29 @@ router.get('/:id', eventController.getEventById);
 
 /**
  * @swagger
+ * /api/events/{id}/register:
+ *   post:
+ *     summary: Register for an event
+ *     description: Registers the authenticated member atomically, preventing duplicate registrations and over-capacity events.
+ *     tags: [Events]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       201: { description: Registration successful }
+ *       401: { description: Authentication required }
+ *       403: { description: Member access required }
+ *       404: { description: Event not found }
+ *       409: { description: Already registered, event full, or registration closed }
+ */
+router.post('/:id/register', authenticate, requireRole('member'), eventController.registerForEvent);
+
+/**
+ * @swagger
  * /api/events:
  *   post:
  *     summary: Create an event

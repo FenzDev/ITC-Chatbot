@@ -89,3 +89,47 @@ export async function getEventById(
     next(error);
   }
 }
+
+export async function registerForEvent(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  try {
+    const id = req.params.id;
+    if (typeof id !== 'string') {
+      res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_ID', message: 'Invalid event ID' },
+      });
+      return;
+    }
+
+    await eventService.registerForEvent(id, req.user!.id);
+    res.status(201).json({
+      success: true,
+      message: 'Successfully registered for event',
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      const responses: Record<string, { status: number; message: string }> = {
+        EVENT_NOT_FOUND: { status: 404, message: 'Event not found' },
+        ALREADY_REGISTERED: {
+          status: 409,
+          message: 'Already registered for this event',
+        },
+        EVENT_FULL: { status: 409, message: 'Event is full' },
+        REGISTRATION_CLOSED: { status: 409, message: 'Registration is closed' },
+      };
+      const response = responses[error.message];
+      if (response) {
+        res.status(response.status).json({
+          success: false,
+          error: { code: error.message, message: response.message },
+        });
+        return;
+      }
+    }
+    next(error);
+  }
+}

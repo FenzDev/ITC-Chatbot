@@ -8,11 +8,45 @@ export async function createEvent(data: CreateEventInput) {
 }
 
 export async function getAllEvents() {
-  return Event.find().sort({ date: 1 });
+  return Event.find().select('-registeredUsers').sort({ date: 1 });
 }
 
 export async function getEventById(id: string) {
-  return Event.findById(id);
+  return Event.findById(id).select('-registeredUsers');
+}
+
+export async function registerForEvent(eventId: string, userId: string) {
+  const event = await Event.findOneAndUpdate(
+    {
+      _id: eventId,
+      status: { $in: ['upcoming', 'ongoing'] },
+      registrationDeadline: { $gte: new Date() },
+      registeredUsers: { $ne: userId },
+      $expr: {
+        $lt: [
+          { $size: { $ifNull: ['$registeredUsers', []] } },
+          '$capacity',
+        ],
+      },
+    },
+    { $addToSet: { registeredUsers: userId } },
+    { new: true },
+  );
+
+  if (event) return event;
+
+  const existingEvent = await Event.findById(eventId).select(
+    'status registrationDeadline registeredUsers capacity',
+  );
+  if (!existingEvent) throw new Error('EVENT_NOT_FOUND');
+  const registeredUsers = existingEvent.registeredUsers ?? [];
+  if (registeredUsers.some((id) => id.toString() === userId)) {
+    throw new Error('ALREADY_REGISTERED');
+  }
+  if (registeredUsers.length >= existingEvent.capacity) {
+    throw new Error('EVENT_FULL');
+  }
+  throw new Error('REGISTRATION_CLOSED');
 }
 
 export async function getAssistantEvents() {
