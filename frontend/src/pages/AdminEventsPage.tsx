@@ -24,6 +24,7 @@ export function AdminEventsPage() {
   const updateAssistantContext = useUpdateAssistantContext();
   const [form, setForm] = useState(initialForm);
   const [context, setContext] = useState("");
+  const [activeTab, setActiveTab] = useState<"events" | "assistant">("events");
 
   if (isPending) {
     return <Overlay label="Admin events"><p className="p-5 text-muted">Checking access…</p></Overlay>;
@@ -59,16 +60,45 @@ export function AdminEventsPage() {
 
   return (
     <Overlay label="Admin events">
-      <div className="mx-auto h-full max-w-3xl overflow-y-auto px-5 py-8 sm:px-8">
+      <div className="scroll-area mx-auto h-full max-w-3xl overflow-y-auto px-5 py-8 sm:px-8">
         <div className="mb-8">
           <p className="eyebrow mb-3">Admin panel</p>
           <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Add an event
+            {activeTab === "events" ? "Add an event" : "Assistant context"}
           </h1>
-          <p className="mt-2 text-muted">Publish a new event for members to discover.</p>
+          <p className="mt-2 text-muted">
+            {activeTab === "events"
+              ? "Publish a new event for members to discover."
+              : "Shape how the assistant helps members."}
+          </p>
         </div>
 
-        <form onSubmit={submit} className="space-y-5">
+        <div className="mb-8 flex border-b-2 border-line" role="tablist" aria-label="Admin panel sections">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "events"}
+            onClick={() => setActiveTab("events")}
+            className={`border-b-4 px-4 py-3 text-sm font-bold transition-colors ${
+              activeTab === "events" ? "border-accent text-ink" : "border-transparent text-muted hover:text-ink"
+            }`}
+          >
+            Events
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "assistant"}
+            onClick={() => setActiveTab("assistant")}
+            className={`border-b-4 px-4 py-3 text-sm font-bold transition-colors ${
+              activeTab === "assistant" ? "border-accent text-ink" : "border-transparent text-muted hover:text-ink"
+            }`}
+          >
+            Assistant context
+          </button>
+        </div>
+
+        {activeTab === "events" && <form onSubmit={submit} className="space-y-5">
           <Field label="Title" required value={form.title} onChange={(e) => update("title", e.target.value)} />
           <div>
             <label htmlFor="description" className="mb-1.5 block text-sm font-bold">Description</label>
@@ -88,9 +118,9 @@ export function AdminEventsPage() {
           <button type="submit" disabled={createEvent.isPending} className="btn btn-primary">
             {createEvent.isPending ? "Publishing…" : "Publish event"}
           </button>
-        </form>
+        </form>}
 
-        <section className="mt-14 border-t-2 border-ink pt-8">
+        {activeTab === "assistant" && <section>
           <p className="eyebrow mb-3">Assistant configuration</p>
           <h2 className="font-display text-3xl font-extrabold tracking-tight">Give the assistant context</h2>
           <p className="mt-2 text-muted">
@@ -112,12 +142,12 @@ export function AdminEventsPage() {
             </div>
             {assistantContext.isError && <p role="alert" className="text-sm text-accent">Couldn&apos;t load assistant context.</p>}
             {updateAssistantContext.isError && <p role="alert" className="text-sm text-accent">{getErrorMessage(updateAssistantContext.error, "Couldn&apos;t save assistant context.")}</p>}
-            {updateAssistantContext.isSuccess && <output className="text-sm font-bold text-accent">Assistant context saved.</output>}
             <button type="submit" disabled={updateAssistantContext.isPending || assistantContext.isPending} className="btn btn-primary">
               {updateAssistantContext.isPending ? "Saving…" : "Save assistant context"}
             </button>
+            {updateAssistantContext.isSuccess && <output className="block text-sm font-bold text-accent">Assistant context saved.</output>}
           </form>
-        </section>
+        </section>}
       </div>
     </Overlay>
   );

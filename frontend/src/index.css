@@ -67,6 +67,20 @@ body {
 }
 ::selection { background: var(--accent); color: var(--on-accent); }
 
+.scroll-area {
+  scrollbar-color: var(--line) transparent;
+  scrollbar-width: thin;
+}
+.scroll-area::-webkit-scrollbar { width: 10px; }
+.scroll-area::-webkit-scrollbar-track { background: transparent; }
+.scroll-area::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+.scroll-area::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
