@@ -12,6 +12,12 @@ export const PORT = validEnv('PORT', z.coerce.number().default(3000));
 export const MONGODB_URI = validEnv('MONGODB_URI', z.string().nonempty());
 export const JWT_EXPIRES_IN = validEnv('JWT_EXPIRES_IN', z.string().nonempty());
 export const JWT_SECRET = validEnv('JWT_SECRET', z.string().nonempty());
+export const AI_API_KEY = validEnv('AI_API_KEY', z.string());
+export const AI_BASE_URL = validEnv(
+  'AI_BASE_URL',
+  z.string().default('https://api.openai.com/v1'),
+);
+export const AI_MODEL = validEnv('AI_MODEL', z.string());
 
 function validEnv<TOutput>(
   variable: string,

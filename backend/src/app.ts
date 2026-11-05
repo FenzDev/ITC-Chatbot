@@ -7,6 +7,7 @@ import { httpLogger } from './middleware/logger.middleware.js';
 
 import authRoutes from './modules/auth/auth.routes.js';
 import eventRoutes from './modules/events/event.routes.js';
+import chatRoutes from './modules/chat/chat.routes.js';
 import { FRONTEND_URL } from './config/env.js';
 
 import swaggerUi from 'swagger-ui-express';
@@ -58,6 +59,7 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/chat', chatRoutes);
 
 // ==========================================
 // 5.5. API Swagger UI

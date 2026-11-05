@@ -226,7 +226,7 @@ POST {{baseUrl}}/events/{{eventId}}/register
 
 
 ### ==========================================
-### 8. CHAT - FUTURE ENDPOINTS
+### 8. CHAT
 ### ==========================================
 
 ### Send chat message (requires member)
@@ -236,6 +236,9 @@ Content-Type: {{contentType}}
 {
   "message": "What upcoming ITC events can I attend?"
 }
+# The response is an SSE stream:
+# data: {"content":"..."}
+# data: [DONE]
 
 
 ### Get chat history (requires member)
