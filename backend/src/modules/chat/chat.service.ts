@@ -1,8 +1,9 @@
 import { AI_API_KEY, AI_BASE_URL, AI_MODEL } from '../../config/env.js';
 import { ChatConversation, type ChatRole } from './chat.model.js';
+import { getAssistantContext, getEventsContext } from './chat.context.js';
 import type { ChatInput } from './chat.validation.js';
 
-type ProviderMessage = { role: ChatRole; content: string };
+type ProviderMessage = { role: ChatRole | 'system'; content: string };
 
 function getMessages(input: ChatInput): ProviderMessage[] {
   if ('message' in input) {
@@ -15,6 +16,10 @@ function getMessages(input: ChatInput): ProviderMessage[] {
 export async function getHistory(userId: string) {
   const conversation = await ChatConversation.findOne({ user: userId }).lean();
   return conversation?.messages ?? [];
+}
+
+export async function clearHistory(userId: string) {
+  await ChatConversation.deleteOne({ user: userId });
 }
 
 export async function streamReply(
@@ -40,7 +45,13 @@ export async function streamReply(
     },
     body: JSON.stringify({
       model: AI_MODEL,
-      messages: conversation.messages.map(({ role, content }) => ({ role, content })),
+      messages: [
+        {
+          role: 'system',
+          content: [await getAssistantContext(), await getEventsContext()].join('\n\n'),
+        },
+        ...conversation.messages.map(({ role, content }) => ({ role, content })),
+      ],
       stream: true,
     }),
   });

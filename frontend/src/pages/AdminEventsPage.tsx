@@ -4,6 +4,7 @@ import { Overlay } from "@/components/ui/Overlay";
 import { Field } from "@/components/ui/Field";
 import { useGetUser } from "@/features/auth/hooks";
 import { useCreateEvent } from "@/features/events/hooks";
+import { useAssistantContext, useUpdateAssistantContext } from "@/features/chat/hooks";
 import { getErrorMessage } from "@/lib/api-client";
 
 const initialForm = {
@@ -19,7 +20,10 @@ const initialForm = {
 export function AdminEventsPage() {
   const { data: user, isPending } = useGetUser();
   const createEvent = useCreateEvent();
+  const assistantContext = useAssistantContext(Boolean(user && user.role === "admin"));
+  const updateAssistantContext = useUpdateAssistantContext();
   const [form, setForm] = useState(initialForm);
+  const [context, setContext] = useState("");
 
   if (isPending) {
     return <Overlay label="Admin events"><p className="p-5 text-muted">Checking access…</p></Overlay>;
@@ -45,6 +49,13 @@ export function AdminEventsPage() {
       onSuccess: () => setForm(initialForm),
     });
   }
+
+  function saveContext(e: React.FormEvent) {
+    e.preventDefault();
+    updateAssistantContext.mutate({ content: context });
+  }
+
+  const contextValue = context || assistantContext.data?.content || "";
 
   return (
     <Overlay label="Admin events">
@@ -78,6 +89,35 @@ export function AdminEventsPage() {
             {createEvent.isPending ? "Publishing…" : "Publish event"}
           </button>
         </form>
+
+        <section className="mt-14 border-t-2 border-ink pt-8">
+          <p className="eyebrow mb-3">Assistant configuration</p>
+          <h2 className="font-display text-3xl font-extrabold tracking-tight">Give the assistant context</h2>
+          <p className="mt-2 text-muted">
+            These instructions are sent as the assistant&apos;s private system context for every member conversation.
+          </p>
+          <form onSubmit={saveContext} className="mt-5 space-y-4">
+            <div>
+              <label htmlFor="assistant-context" className="mb-1.5 block text-sm font-bold">Assistant instructions</label>
+              <textarea
+                id="assistant-context"
+                required
+                maxLength={10000}
+                value={contextValue}
+                onChange={(e) => setContext(e.target.value)}
+                className="field min-h-56 resize-y"
+                placeholder="Describe the club, tone, rules, and information the assistant should use."
+              />
+              <p className="mt-1 text-right text-xs text-muted">{contextValue.length}/10000</p>
+            </div>
+            {assistantContext.isError && <p role="alert" className="text-sm text-accent">Couldn&apos;t load assistant context.</p>}
+            {updateAssistantContext.isError && <p role="alert" className="text-sm text-accent">{getErrorMessage(updateAssistantContext.error, "Couldn&apos;t save assistant context.")}</p>}
+            {updateAssistantContext.isSuccess && <output className="text-sm font-bold text-accent">Assistant context saved.</output>}
+            <button type="submit" disabled={updateAssistantContext.isPending || assistantContext.isPending} className="btn btn-primary">
+              {updateAssistantContext.isPending ? "Saving…" : "Save assistant context"}
+            </button>
+          </form>
+        </section>
       </div>
     </Overlay>
   );

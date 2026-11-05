@@ -33,3 +33,21 @@ export const ChatConversation = model<IChatConversation>(
   'ChatConversation',
   conversationSchema,
 );
+
+export interface IAssistantContext extends Document {
+  key: 'default';
+  content: string;
+}
+
+const assistantContextSchema = new Schema<IAssistantContext>(
+  {
+    key: { type: String, enum: ['default'], unique: true, default: 'default' },
+    content: { type: String, required: true, trim: true },
+  },
+  { timestamps: true },
+);
+
+export const AssistantContext = model<IAssistantContext>(
+  'AssistantContext',
+  assistantContextSchema,
+);

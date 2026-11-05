@@ -14,3 +14,14 @@ export async function getAllEvents() {
 export async function getEventById(id: string) {
   return Event.findById(id);
 }
+
+export async function getAssistantEvents() {
+  return Event.find({
+    date: { $gte: new Date() },
+    status: { $in: ['upcoming', 'ongoing'] },
+  })
+    .sort({ date: 1 })
+    .limit(20)
+    .select('title description location date capacity registrationDeadline status')
+    .lean();
+}

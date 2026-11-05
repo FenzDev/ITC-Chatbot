@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Overlay } from "@/components/ui/Overlay";
-import { useSendChat } from "@/features/chat/hooks";
-import { useChatHistory } from "@/features/chat/hooks";
+import { useChatHistory, useClearChatHistory, useSendChat } from "@/features/chat/hooks";
 import { useGetUser } from "@/features/auth/hooks";
 import type { ChatMessage } from "@/features/chat/types";
 
@@ -11,6 +10,7 @@ export function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const chat = useSendChat();
+  const clearChat = useClearChatHistory();
   const { data: user } = useGetUser();
   const history = useChatHistory(Boolean(user));
 
@@ -25,14 +25,27 @@ export function ChatPage() {
     const next: ChatMessage[] = [...displayedMessages, { role: "user", content: text.trim() }];
     setMessages(next);
     setInput("");
-    chat.mutate(next, {
+    chat.mutate(text.trim(), {
       onSuccess: (reply) => setMessages([...next, { role: "assistant", content: reply }]),
     });
+  }
+
+  function restartChat() {
+    if (chat.isPending || clearChat.isPending) return;
+    clearChat.mutate(undefined, { onSuccess: () => setMessages([]) });
   }
 
   return (
     <Overlay label="Assistant">
       <div className="mx-auto flex h-full max-w-3xl flex-col">
+        <div className="flex items-center justify-between border-b-2 border-line px-5 py-3">
+          <p className="text-sm font-bold text-muted">Your private conversation</p>
+          {displayedMessages.length > 0 && (
+            <button type="button" onClick={restartChat} disabled={chat.isPending || clearChat.isPending} className="btn btn-ghost !px-3 !py-1.5 text-xs">
+              {clearChat.isPending ? "Clearing…" : "Restart chat"}
+            </button>
+          )}
+        </div>
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-8">
           {displayedMessages.length === 0 && (
             <div className="animate-rise pt-[6vh] text-center">

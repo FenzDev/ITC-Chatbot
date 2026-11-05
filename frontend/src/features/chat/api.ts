@@ -1,14 +1,18 @@
 import { api, ApiError } from "@/lib/api-client";
-import type { ChatMessage } from "./types";
+import type { AssistantContext, ChatMessage } from "./types";
 
 export const getChatHistory = () => api<ChatMessage[]>("/chat/history");
+export const clearChatHistory = () => api<void>("/chat/history", { method: "DELETE" });
+export const getAssistantContext = () => api<AssistantContext>("/chat/context");
+export const updateAssistantContext = (input: AssistantContext) =>
+  api<AssistantContext>("/chat/context", { method: "PUT", body: input });
 
-export async function sendChat(messages: ChatMessage[]): Promise<string> {
+export async function sendChat(message: string): Promise<string> {
   const response = await fetch(`${import.meta.env.VITE_API_URL ?? ""}/api/chat`, {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ message }),
   });
 
   if (!response.ok) {
