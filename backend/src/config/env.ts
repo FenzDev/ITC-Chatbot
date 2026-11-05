@@ -12,6 +12,14 @@ export const PORT = validEnv('PORT', z.coerce.number().default(3000));
 export const MONGODB_URI = validEnv('MONGODB_URI', z.string().nonempty());
 export const JWT_EXPIRES_IN = validEnv('JWT_EXPIRES_IN', z.string().nonempty());
 export const JWT_SECRET = validEnv('JWT_SECRET', z.string().nonempty());
+export const ADMIN_EMAIL = validEnv(
+  'ADMIN_EMAIL',
+  z.email().transform((email) => email.toLowerCase()),
+);
+export const ADMIN_PASSWORD = validEnv(
+  'ADMIN_PASSWORD',
+  z.string().min(8),
+);
 export const AI_API_KEY = validEnv('AI_API_KEY', z.string());
 export const AI_BASE_URL = validEnv(
   'AI_BASE_URL',
