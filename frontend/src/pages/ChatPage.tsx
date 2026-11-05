@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { Overlay } from "@/components/ui/Overlay";
 import { useChatHistory, useClearChatHistory, useSendChat } from "@/features/chat/hooks";
 import { useGetUser } from "@/features/auth/hooks";
@@ -7,6 +8,7 @@ import type { ChatMessage } from "@/features/chat/types";
 const suggestions = ["What events are coming up?", "How do I join the club?", "What can you help with?"];
 
 export function ChatPage() {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const chat = useSendChat();
@@ -14,7 +16,7 @@ export function ChatPage() {
   const { data: user } = useGetUser();
   const history = useChatHistory(Boolean(user));
 
-  if (history.isPending) {
+  if (user && history.isPending) {
     return <Overlay label="Assistant"><p className="p-5 text-muted">Loading conversation…</p></Overlay>;
   }
 
@@ -22,6 +24,11 @@ export function ChatPage() {
 
   function send(text: string) {
     if (!text.trim() || chat.isPending) return;
+    if (!user) {
+      navigate("/register");
+      return;
+    }
+
     const next: ChatMessage[] = [...displayedMessages, { role: "user", content: text.trim() }];
     setMessages(next);
     setInput("");
@@ -53,6 +60,12 @@ export function ChatPage() {
               <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-6xl">
                 Ask anything about <span className="text-accent">the club</span>
               </h1>
+              {!user && (
+                <p className="mx-auto mt-4 max-w-md text-muted">
+                  Create a free account to chat with the assistant.
+                  <Link to="/register" className="ml-1 font-bold text-accent hover:underline">Register now</Link>
+                </p>
+              )}
               <div className="mt-8 flex flex-wrap justify-center gap-2">
                 {suggestions.map((s) => (
                   <button key={s} onClick={() => send(s)} className="btn btn-ghost">{s}</button>
@@ -84,19 +97,29 @@ export function ChatPage() {
           <div ref={(el) => el?.scrollIntoView({ behavior: "smooth", block: "end" })} />
         </div>
 
-        <form
-          onSubmit={(e) => { e.preventDefault(); send(input); }}
-          className="flex gap-2 border-t-2 border-ink p-4"
-        >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message…"
-            aria-label="Message"
-            className="field flex-1"
-          />
-          <button className="btn btn-primary" disabled={chat.isPending || !input.trim()}>Send</button>
-        </form>
+        {user ? (
+          <form
+            onSubmit={(e) => { e.preventDefault(); send(input); }}
+            className="flex gap-2 border-t-2 border-ink p-4"
+          >
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type a message…"
+              aria-label="Message"
+              className="field flex-1"
+            />
+            <button className="btn btn-primary" disabled={chat.isPending || !input.trim()}>
+              Send
+            </button>
+          </form>
+        ) : (
+          <div className="border-t-2 border-ink p-4">
+            <Link to="/register" className="btn btn-primary w-full">
+              Register to chat
+            </Link>
+          </div>
+        )}
       </div>
     </Overlay>
   );
